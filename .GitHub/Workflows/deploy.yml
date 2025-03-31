@@ -1,0 +1,55 @@
+name: Deploy Sushail
+
+on:
+  push:
+    branches:
+      - main  # Déclencher le workflow sur des push sur la branche 'main'
+  pull_request:
+    branches:
+      - main  # Déclencher également pour les PR sur 'main'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # Choisir l'environnement d'exécution (ici Ubuntu)
+    
+    steps:
+      # Étape 1 : Vérifier le code source
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Étape 2 : Configurer l'environnement (par exemple, si c'est un projet Node.js)
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      # Étape 3 : Installer les dépendances du projet
+      - name: Install dependencies
+        run: npm install  # Changez cette commande selon votre gestionnaire de dépendances (ex: `pip install` pour Python)
+
+      # Étape 4 : Construire le projet si nécessaire
+      - name: Build project
+        run: npm run build  # Modifiez selon vos besoins
+
+      # Étape 5 : Déployer sur le serveur / plateforme
+      # Exemple avec Heroku
+      - name: Deploy to Heroku
+        uses: akshnz/heroku-deploy@v1
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: 'your-heroku-app-name'
+
+      # Exemple avec AWS (si vous avez un serveur EC2, S3, etc.)
+      - name: Deploy to AWS EC2
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USER }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            cd /path/to/your/project
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart your-app
+
